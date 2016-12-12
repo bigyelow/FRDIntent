@@ -24,13 +24,13 @@ class RouteManager {
    - parameter url: The path for search the storage position.
    - parameter clazz: The clazz to be saved.
    */
-  func register(url: URL, clazz: FRDIntentReceivable.Type) -> Bool {
+  func register(_ url: URL, for clazz: FRDIntentReceivable.Type) -> Bool {
 
-    if let (_, handler) = routes.search(url: url) {
-      routes.insert(url: url, value: (clazz, handler))
+    if let (_, handler) = routes.search(url) {
+      routes.insert(url, with: (clazz, handler))
     } else {
       // not find it, insert
-      routes.insert(url: url, value: (clazz, nil))
+      routes.insert(url, with: (clazz, nil))
     }
 
     return true
@@ -42,13 +42,13 @@ class RouteManager {
    - parameter url: The path for search the storage position.
    - parameter hanlder: The handler to be saved.
   */
-  func register(url: URL, handler: @escaping URLRoutesHandler) -> Bool {
+  func register(_ url: URL, handler: @escaping URLRoutesHandler) -> Bool {
 
-    if let (clazz, _) = routes.search(url: url) {
-      routes.insert(url: url, value: (clazz, handler))
+    if let (clazz, _) = routes.search(url) {
+      routes.insert(url, with: (clazz, handler))
     } else {
       // not find it, insert
-      routes.insert(url: url, value: (nil, handler))
+      routes.insert(url, with: (nil, handler))
     }
 
     return true
@@ -63,10 +63,10 @@ class RouteManager {
 
    - returns: A tuple with parameters and clazz.
    */
-  func searchController(url: URL) -> (URLRoutesHandlerParam, FRDIntentReceivable.Type?) {
-    let params = extractParameters(url: url)
+  func searchController(for url: URL) -> (URLRoutesHandlerParam, FRDIntentReceivable.Type?) {
+    let params = extractParameters(from: url)
 
-    if let (clazz, _) = routes.searchWithNearestMatch(url: url) {
+    if let (clazz, _) = routes.searchNearestMatchedURL(with: url) {
       return (params, clazz)
     } else {
       return (params, nil)
@@ -81,10 +81,10 @@ class RouteManager {
 
    - returns: A tuple with parameters and handler.
    */
-  func searchHandler(url: URL) -> (URLRoutesHandlerParam, URLRoutesHandler?) {
-    let params = extractParameters(url: url)
+  func searchHandler(for url: URL) -> (URLRoutesHandlerParam, URLRoutesHandler?) {
+    let params = extractParameters(from: url)
 
-    if let (_, handler) = routes.searchWithNearestMatch(url: url) {
+    if let (_, handler) = routes.searchNearestMatchedURL(with: url) {
       return (params, handler)
     } else {
       return (params, nil)
@@ -92,10 +92,10 @@ class RouteManager {
   }
 
   // MARK: - Private Methods
-  private func extractParameters(url: URL) -> URLRoutesHandlerParam {
+  private func extractParameters(from url: URL) -> URLRoutesHandlerParam {
 
     // Extract placeholder parameters
-    var params = routes.matchUrlPattern(url: url)
+    var params = routes.matchedPattern(from: url)
 
     // Add url to params
     params.updateValue(url as AnyObject, forKey: FRDRouteParameters.URLRouteURL)

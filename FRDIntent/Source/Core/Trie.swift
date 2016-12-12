@@ -48,14 +48,14 @@ class Trie<T> {
    - parameter url: the url.
    - parameter value: the value for inserting.
    */
-  func insert(url: URL, value: T) {
+  func insert(_ url: URL, with value: T) {
     guard let paths = url.pathComponentsWithoutSlash else {
       return
     }
-    insert(paths: paths, value: value)
+    insert(paths: paths, with: value)
   }
 
-  private func insert(paths: [String], value: T) {
+  private func insert(paths: [String], with value: T) {
     var currentNode = root
     for path in paths {
       if let child = currentNode.children[path] {
@@ -76,20 +76,20 @@ class Trie<T> {
 
    - returns: the node's value.
    */
-  func search(url: URL) -> T? {
+  func search(_ url: URL) -> T? {
     guard let paths = url.pathComponentsWithoutSlash else {
       return nil
     }
-    return search(paths: paths)
+    return search(paths)
   }
 
-  private func search(paths: [String]) -> T? {
+  private func search(_ paths: [String]) -> T? {
     var currentNode = root
     for path in paths {
       if let child = currentNode.children[path] {
         currentNode = child
       } else {
-        if let child = currentNode.childOrFirstPlaceholder(key: path) {
+        if let child = currentNode.childOrFirstPlaceholder(for: path) {
           currentNode = child
         } else {
           return nil
@@ -106,14 +106,14 @@ class Trie<T> {
 
    - returns: the node's value. If trie has this paths, return the value in this node. If trie has not this paths, return the nearest registered url parent.
    */
-  func searchWithNearestMatch(url: URL) -> T? {
+  func searchNearestMatchedURL(with url: URL) -> T? {
     guard let paths = url.pathComponentsWithoutSlash else {
       return nil
     }
-    return searchWithNearestMatch(paths: paths)
+    return searchWNearestMatchedPath(with: paths)
   }
 
-  private func searchWithNearestMatch(paths: [String]) -> T? {
+  private func searchWNearestMatchedPath(with paths: [String]) -> T? {
     var currentNode = root
     var nearestUrlParent = root
     for path in paths {
@@ -123,7 +123,7 @@ class Trie<T> {
           nearestUrlParent = currentNode
         }
       } else {
-        if let child = currentNode.childOrFirstPlaceholder(key: path) {
+        if let child = currentNode.childOrFirstPlaceholder(for: path) {
           currentNode = child
           if currentNode.isRegisteredUrl {
             nearestUrlParent = currentNode
@@ -145,7 +145,7 @@ class Trie<T> {
 
    - returns: dictionary for the pattern match result.
    */
-  func matchUrlPattern(url: URL) -> URLRoutesHandlerParam {
+  func matchedPattern(from url: URL) -> URLRoutesHandlerParam {
     guard let paths = url.pathComponentsWithoutSlash else {
       return [:]
     }
@@ -156,7 +156,7 @@ class Trie<T> {
       if let child = currentNode.children[path] {
         currentNode = child
       } else {
-        if let child = currentNode.childOrFirstPlaceholder(key: path) {
+        if let child = currentNode.childOrFirstPlaceholder(for: path) {
           if child.isPlaceholder {
             params[child.placeholder!] = path as AnyObject
           }
@@ -205,7 +205,7 @@ fileprivate class TrieNode<T> {
     self.children = [:]
   }
 
-  func childOrFirstPlaceholder(key: String) -> TrieNode? {
+  func childOrFirstPlaceholder(for key: String) -> TrieNode? {
     if let child = children[key] {
       return child
     } else {
